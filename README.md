@@ -29,7 +29,7 @@ To use the package, import the `calculate_densities` function:
 from pytstability import calculate_densities
 ```
 
-### 🚨 Heads Up: Unpacking Your Results
+### Unpacking Your Results
 The engine returns **three variables**:
 
 ```python
