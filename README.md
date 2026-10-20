@@ -1,6 +1,6 @@
-# pykdensity
+# pytstability
 
-`pykdensity` is a Python package that helps you figure out how well-connected your data is. It is built for researchers working in fields like biology, linguistics, and cultural anthropology.
+`pytstability` is a Python package that helps you figure out how well-connected your data is. It is built for researchers working in fields like biology, linguistics, and cultural anthropology.
 
 Specifically, it looks at your dataset from two angles:
 1. **Spatial Density:** How close your data points are to each other on a map.
@@ -16,7 +16,7 @@ When you feed a dataset into complex hierarchical models, the models assume your
 You can install this package directly from GitHub using `pip`:
 
 ```bash
-pip install git+https://github.com/lingdoc/pykdensity
+pip install git+https://github.com/lingdoc/pytstability
 ```
 
 ---
@@ -26,7 +26,7 @@ pip install git+https://github.com/lingdoc/pykdensity
 To use the package, import the `calculate_densities` function:
 
 ```python
-from pykdensity import calculate_densities
+from pytstability import calculate_densities
 ```
 
 ### 🚨 Heads Up: Unpacking Your Results
@@ -78,7 +78,7 @@ See the `calculate_k_densities.py` script for working code examples.
 ### 1. Vertebrate Ecology (Biology Tree with Autofit)
 ```python
 import pandas as pd
-from pykdensity import calculate_densities
+from pytstability import calculate_densities
 
 df = pd.read_csv("data/bio/mammals.csv")
 
@@ -99,7 +99,7 @@ print(f"Safety Stability Score (TSI): {tsi:.6f}")
 ### 2. Linguistic Typology (Combining Maps and Compressed Trees)
 ```python
 import pandas as pd
-from pykdensity import calculate_densities
+from pytstability import calculate_densities
 
 df = pd.read_csv("data/tlu/Glottolog_Languages.csv")
 
@@ -121,7 +121,7 @@ s_metrics, st_metrics, tsi = calculate_densities(
 ### 3. Cultural Evolution (Category Groupings Only)
 ```python
 import pandas as pd
-from pykdensity import calculate_densities
+from pytstability import calculate_densities
 
 df = pd.read_excel("data/etc/Data_love_bywork_2019.xlsx")
 

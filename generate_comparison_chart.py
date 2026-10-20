@@ -1,5 +1,5 @@
 """
-generate_k_comparison_chart.py
+generate_comparison_chart.py
 
 reads compiled connectivity summaries from the output directory and saves two
 separate linear bar images reflecting independent spatial (0.01) and structural (0.10) limits.

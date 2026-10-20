@@ -1,5 +1,5 @@
 """
-pykdensity/engine.py - Advanced Multi-Domain Network Topology Calibration Engine
+pytstability/engine.py - Advanced Multi-Domain Network Topology Calibration Engine
 Reviewed version with corrected spatial indexing and safe lineage translation fallbacks.
 """
 import os

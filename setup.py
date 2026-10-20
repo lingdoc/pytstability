@@ -9,13 +9,13 @@ if os.path.exists(readme_path):
         long_description = f.read()
 
 setup(
-    name="pykdensity",
+    name="pytstability",
     version="0.1.0",
     author="Hiram Ring",
     description="Network adjacency engine for measuring spatial and structural data connectivity",
     long_description=open("README.md", encoding="utf-8").read() if open("README.md") else "",
     long_description_content_type="text/markdown",
-    url="https://github.com/lingdoc/pykdensity",
+    url="https://github.com/lingdoc/pytstability",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
