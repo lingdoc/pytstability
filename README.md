@@ -1,192 +1,149 @@
 # pykdensity
 
-pykdensity is a Python package designed to measure connectivity (κ) within datasets used in biology, linguistics, and anthropology. Specifically, it calculates spatial density (how close your data points are to each other geographically) and structural density (how closely related your data points are evolutionarily or historically).
+`pykdensity` is a Python package that helps you figure out how well-connected your data is. It is built for researchers working in fields like biology, linguistics, and cultural anthropology.
 
-Measuring these attributes helps researchers identify under-determined sparse regions and isolated edge anomalies. When specific nodes are too structurally or spatially sparse, traditional multilevel models lose regularizing traction, potentially distorting statistical outputs through parameter collapse or standard error explosion if the volatile nodes are not properly partitioned.
+Specifically, it looks at your dataset from two angles:
+1. **Spatial Density:** How close your data points are to each other on a map.
+2. **Structural Density:** How closely related your data points are historically or evolutionarily (like sharing branches on a family tree).
 
+### Why use it?
+When you feed a dataset into complex hierarchical models, the models assume your data points are well-connected. If your data is actually broken up into isolated "islands" with huge information gaps, those statistical models can fail—leading to massive errors or numbers that completely collapse or (worse) topological mirages. This package flags those weak spots before you start modeling.
+
+---
 
 ## Installation
 
-You can install this package directly from GitHub by adding it to your terminal or your project's requirements file.
+You can install this package directly from GitHub using `pip`:
 
 ```bash
 pip install git+https://github.com/lingdoc/pykdensity
 ```
 
+---
 
-## Core Function Arguments
+## Core Function Call & Outputs
 
-To use the package, import the `calculate_densities` function.
+To use the package, import the `calculate_densities` function:
 
 ```python
 from pykdensity import calculate_densities
 ```
 
-It accepts the following arguments:
+### 🚨 Heads Up: Unpacking Your Results
+The engine returns **three variables**:
+
+```python
+spatial_metrics, struct_metrics, tsi_score = calculate_densities(...)
+```
+
+*   **`spatial_metrics`** (dict): A dictionary tracking your map connections, including the overall density (`kappa`), the percentage of completely isolated points (`P_isolated`), and the size of your largest single clump of data (`S_giant`).
+*   **`struct_metrics`** (dict): A dictionary tracking your tree/historical connections, using the exact same metrics (`kappa`, `P_isolated`, `S_giant`).
+*   **`tsi_score`** (float): The **Topology Stability Index**. A single safety score that tells you if your dataset is well-connected enough to safely run default models.
+
+---
+
+## Function Arguments
 
 ### Required Arguments
-* **`data`** (pandas DataFrame): The table containing your research data.
-* **`id_col`** (string): The name of the column that uniquely identifies each row (e.g., 'Species', 'glottocode', or 'Name').
+*   **`data`** (*pandas DataFrame*): The spreadsheet table containing your research data.
+*   **`id_col`** (*string*): The column name that uniquely identifies each row (like `'Species'`, `'glottocode'`, or `'Language_ID'`).
 
 ### Optional Arguments
-* **`tree`** (string): The file path to an evolutionary tree file (supports .nex, .csv, and compressed .trees.gz files).
-* **`tree_type`** (string): Defines how structural node steps are calculated.
-  * `"fixed"` (Default): Interprets the depth parameter as a flat integer count of branching events down from the master root node. Best for standard biological tree topologies.
-  * `"adaptive"`: Dynamically converts the integer parameter into a percentage ratio (value * 10%) to normalize uneven branch lengths. Best for linguistic or high-variance tree lineages.
-* **`spatial_mode`** (string): Controls spatial calculation. Accepts 'coords', 'categorical', 'mixed', 'auto', or 'none'.
-* **`struct_mode`** (string): Controls structural calculation. Accepts 'tree', 'categorical', 'mixed', 'auto', or 'none'.
-* **`spatial_cats`** (string or list of strings): Category columns used to group data by region names (e.g., 'macroarea' or 'Zone').
-* **`struct_cats`** (string or list of strings): Category columns used to group data by flat lineages (e.g., 'Family_ID', 'Order', or 'Family').
-* **`coord_cols`** (list of strings): Coordinates passed as a list of column headers containing points (e.g., `['latitude', 'longitude']` or `['X', 'Y', 'Z']`).
-* **`spatial_km`** (float): The maximum distance in kilometers to consider two points geographically connected. Defaults to 500.0.
-* **`struct_depth`** (integer): The minimum shared historical node depth or percentage ratio required to consider two points connected. Defaults to 3.
-* **`verbose`** (boolean): Set to True to print progress logs and diagnostics to the terminal window. Defaults to True.
+*   **`tree`** (*string*): The file path to your evolutionary or historical family tree file (supports `.nex`, `.csv`, and `.trees.gz`).
+*   **`tree_type`** (*string*): Tells the code how to count steps down your tree branches.
+    *   `"fixed"` (Default): Treats steps as flat integer counts. Best for standard biological species trees.
+    *   `"adaptive"`: Converts steps into relative percentages. Perfect for language families where branches are uneven lengths.
+*   **`struct_depth`** (*integer or `"auto"`*): How far back two points must share a branch to be considered "connected". **Defaults to `"auto"`, which lets the engine test your data and choose the best depth for you automatically.**
+*   **`spatial_mode` / `struct_mode`** (*string*): Strategy for building the internal network grid (`'auto'`, `'coords'`, `'categorical'`, `'mixed'`, or `'none'`).
+*   **`spatial_cats` / `struct_cats`** (*string or list*): Column headers used to group data by text matches (like matching a `'Zone'` or `'Family_ID'`).
+*   **`coord_cols`** (*list of strings*): Your map coordinates, passed as a list, e.g., `['latitude', 'longitude']`.
+*   **`spatial_km`** (*float*): The maximum distance in kilometers to consider two points geographically close. Defaults to `500.0` km.
+*   **`verbose`** (*boolean*): Set to `True` to print progress logs and safety alerts straight to your terminal. Defaults to `True`.
 
+---
 
-## Setting the Structural Depth Threshold
+## Feature Highlight: Let the Engine Autofit Your Settings
 
-The `struct_depth` parameter controls how far back in historical or evolutionary time two observations must share a branch to be considered connected. Because biological and linguistic trees are formatted differently, the engine interprets this number in two distinct ways:
+Picking a tree depth manually may bias your connectivity scores. If you set `struct_depth='auto'`, the engine takes over and tries to optimize the calculation settings for you, by finding the depth that leads to the best outcome:
 
-### 1. Biological Trees (Fixed Node Depth)
-When parsing standard biological trees, this number represents a flat count of ancestral branching events starting from the root of the tree.
-* **Low Values (e.g., 3 to 5):** Checks for broad, deep connections. Two species draw an edge if they simply belong to the same large taxonomic order or family.
-* **High Values (e.g., 10+):** Restricts connections to highly specific, recent sub-clades. Only closely related sister species draw an edge.
+*   **For Biology Datasets:** The code tests branch levels from 2 down to 10, running internal sanity checks to see which depth reveals the cleanest, most natural groupings.
+*   **For Linguistics & Culture Datasets:** The code tests matching percentages from 50% to 98%. It cross-checks your historical tree against your geographic map points to find the setting where history and geography align most logically.
 
-### 2. Linguistic Trees (Adaptive Proportional Depth)
-Linguistic trees often have wildly uneven branch lengths across language families. To prevent large, shallow language families from skewing your metrics, when `tree_type='adaptive'` the engine dynamically converts the integer value into a percentage threshold (multiplying the value by 10%).
-* **Value of 3 (interprets as 30%):** A relaxed threshold. Two languages connect if they share even a minor portion of their historical path.
-* **Value of 5 (interprets as 50%):** A balanced median benchmark. Requires languages to share at least half of their ancestral lineage history.
-* **Value of 8 or higher (interprets as 80%+):** A restrictive threshold. Disconnects massive regional families from each other, only drawing an edge if the languages share a deep, specific local history.
+---
 
+## Quick Code Examples
 
-## Examples
+See the `calculate_k_densities.py` script for working code examples.
 
-### 1. Using a tree file (biology example)
-If you have an explicit tree file showing how species are related:
-
+### 1. Vertebrate Ecology (Biology Tree with Autofit)
 ```python
 import pandas as pd
 from pykdensity import calculate_densities
 
 df = pd.read_csv("data/bio/mammals.csv")
 
-spatial_k, structural_k = calculate_densities(
+# Letting struct_depth='auto' figure out the tree depth for you
+s_metrics, st_metrics, tsi = calculate_densities(
     data=df,
     id_col="Species",
     tree="data/bio/mammals100trees.nex",  
     tree_type="fixed",              
-    struct_depth=5,
+    struct_depth="auto",
     verbose=True
 )
+
+print(f"Auto-selected Structural Density: {st_metrics['kappa']:.4f}")
+print(f"Safety Stability Score (TSI): {tsi:.6f}")
 ```
 
-### 2. Using coordinates and compressed trees (linguistics example)
-If you are tracking geographic points alongside a tree file:
-
+### 2. Linguistic Typology (Combining Maps and Compressed Trees)
 ```python
 import pandas as pd
 from pykdensity import calculate_densities
 
 df = pd.read_csv("data/tlu/Glottolog_Languages.csv")
 
-spatial_k, structural_k = calculate_densities(
+# The code automatically handles coordinates safely behind the scenes
+s_metrics, st_metrics, tsi = calculate_densities(
     data=df,
     id_col="glottocode",
-    tree="data/tlu/0573KA/pruned_tree.trees.gz",
+    tree="data/tlu/0015aKA/pruned_tree.trees.gz",
     tree_type="adaptive",
+    struct_depth="auto",
     coord_cols=["latitude", "longitude"],
     spatial_cats="macroarea",
     struct_cats="Family_ID",
     spatial_km=500.0,
-    struct_depth=8,
     verbose=True
 )
 ```
 
-### 3. Using categorical groupings (culture example)
-If your data does not use explicit tree paths but relies on regional and historical categories:
-
+### 3. Cultural Evolution (Category Groupings Only)
 ```python
 import pandas as pd
 from pykdensity import calculate_densities
 
 df = pd.read_excel("data/etc/Data_love_bywork_2019.xlsx")
 
-spatial_k, structural_k = calculate_densities(
+# No tree file? No problem. It creates a network using your category text columns.
+s_metrics, st_metrics, tsi = calculate_densities(
     data=df,
     id_col="Name",
+    tree=None,
     spatial_cats="Zone",
     struct_cats=["Century", "Genre.1"],
     verbose=True
 )
 ```
 
-## Advanced multi-layer overlays (mixed mode)
+---
 
-A key feature of `pykdensity` is its ability to run **Mixed Mode** intersection metrics. This allows you to combine continuous topological layers (like geographic coordinates or branching tree structures) with flat categorical overlays (like macroareas or language family groupings) to get a more realistic picture of data clustering.
+## Reading Your Safety Reports
 
-The engine handles these combined data spaces automatically using a logical intersection rule:
+When `verbose=True`, the package prints out a quick diagnostic report about your data structure:
 
-### 1. Spatial mixed overlays (`coord_cols` + `spatial_cats`)
-When you provide both geographic coordinates and region category tags, the engine builds a dual-constraint network grid:
-* **The Rule:** Two rows draw a connection **ONLY IF** they sit within the specified distance limit (e.g., `spatial_km=500.0`) **AND** belong to the exact same text category (e.g., `spatial_cats='macroarea'`).
-* **Why use it:** This prevents distant geographic outliers that happen to share an artificial administrative boundary from bloating your connectivity scores.
+### PIPELINE CRASH ALERT
+This means your dataset has broken apart into isolated islands. Your historical data is too fragmented, or your categories don't talk to each other. If you try to run traditional multi-level regression models on this data right now, your model's parameters are highly likely to collapse or blow up. You'll need to restructure your data partitions or use specialized continuous models.
 
-### 2. Structural mixed overlays (`tree` + `struct_cats`)
-When you pass a branching lineage file along with discrete flat family or order categories, the engine combines their signals:
-* **The Rule:** Two rows draw a connection if they pass your ancestral branch path limit (`struct_depth`) **OR** if they match the categorical name labels exactly (e.g., `struct_cats='Family_ID'`).
-* **Why use it:** This provides a crucial safety net for isolated linguistic or taxonomic data. If your tree file suffers from unanchored or missing deeper branches across family lines, the categorical overlay bridges the gap, allowing the engine to calculate a stable density score without dropping data.
-
-### Example configuration
-
-To run a fully integrated, multi-layer mixed analysis, pass both continuous inputs and text category column strings simultaneously:
-
-```python
-import pandas as pd
-from pykdensity import calculate_densities
-
-df = pd.read_csv("data/advanced_dataset.csv")
-
-# the engine auto-detects 'mixed' modes because both arrays are provided
-spatial_k, structural_k = calculate_densities(
-    data=df,
-    id_col="glottocode",
-    tree="data/pruned_tree.trees.gz",
-    tree_type="adaptive",
-    struct_depth=8,
-    coord_cols=["latitude", "longitude"],
-    spatial_km=500.0,
-    spatial_cats="macroarea",     # intersects distance matrix with macro-regions
-    struct_cats="Family_ID",      # unifies tree pathways with flat lineage IDs
-    verbose=True
-)
-```
-
-## Understanding the outputs
-
-The function returns two standard network adjacency metrics, both scaled strictly between `0.0` (no connectivity) and `1.0` (complete saturation):
-
-* **Spatial Density:** The proportion of your data point pairs that sit close enough to each other geographically to cross your distance limit.
-* **Structural Density:** The proportion of your data point pairs that share a deep historical or evolutionary branch segment.
-
-### Matrix interpretation guidelines
-
-Because these connectivity metrics reflect the strength of spatial and historical relationships in the data, they serve as a guide for selecting the right model architecture:
-
-#### Spatial density tiers
-* **Sparse spatial frontier (κ_spatial ≤ 0.01):**
-  Indicates extreme geographic dispersion. The continuous coordinate surface may still handle this low density gracefully, but it flags the need for specialized continuous models to fill extensive physical gaps.
-* **Moderate spatial mesh (0.20 ≥ κ_spatial > 0.01):**
-  Reasonable geographic signal. Standard models remain stable.
-* **Dense spatial mesh (κ_spatial > 0.20):**
-  Heavy geographic concentration. High risk of spatial autocorrelation (Galton's Problem), where proximity completely confounds historical independence. Spatial controls are mandatory.
-
-#### Structural density tiers
-* **Sparse topology [Critical Zone] (κ_structural ≤ 0.10):**
-  The structural matrix shatters into completely disconnected lineage islands. Traditional multi-level models run out of shared branch traction, triggering severe parameter collapse or runaway errors. Continuous spatial cross-pooling or properly partitioned architectures are required to anchor the parameters.
-* **Moderate topology (0.25 ≥ κ_structural > 0.10):**
-  The dataset contains sufficient structural signal for convergence by multiple kinds of modeling architectures.
-* **Dense topology (κ_structural > 0.25):**
-  The dataset contains a highly dense, robust historical signal. Ideal for structure-aware models. Simple regressions may produce artificially low p-values and high false-positive rates, as high structural density violates row-independence assumptions.
-
-*Note: If your dataset lacks the columns needed for a specific calculation, the function returns `NaN` (Not a Number) for that metric instead of crashing, allowing your automation loops to finish running.*
+### ROBUST POSTERIOR SURFACE
+This means your dataset passes the safety check. There is a healthy, continuous backbone of shared connections across your rows, making it perfectly safe to proceed with your standard regressions or MCMC parameter estimations.
