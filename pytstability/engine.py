@@ -210,7 +210,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
     calculated_space = False
 
     if s_mode in ['coords', 'mixed'] and coord_cols and len(coord_cols) >= 2:
-        # ✅ FIXED: Handled implicit 2D array parsing to fix row metric stacks
+        # implicit 2D array parsing to fix row metric stacks
         lat_rad = np.radians(df[[coord_cols[0]]].to_numpy().flatten().astype(float))
         lon_rad = np.radians(df[[coord_cols[1]]].to_numpy().flatten().astype(float))
         R = 6371.0
