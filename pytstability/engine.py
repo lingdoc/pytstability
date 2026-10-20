@@ -143,7 +143,7 @@ def _parse_unified_tree(tree_path, df, id_col, tree_type='fixed', depth_threshol
             elif char not in [',', ';', ':', ' ']:
                 match = re.match(r'^([\d\w\.\-_]+)', tree_string[i:])
                 if match:
-                    # ✅ FIXED: Enforced strict sanitization strings on custom dictionary maps
+                    # Enforce strict sanitization strings on custom dictionary maps
                     token = match.group(1).strip().lower().replace("'", "").replace('"', '')
                     resolved_key = translate_map.get(token, token).replace(' ', '_')
                     lineage_paths_cache[resolved_key] = list(stack)
@@ -173,7 +173,7 @@ def _parse_unified_tree(tree_path, df, id_col, tree_type='fixed', depth_threshol
 def calculate_densities(data, id_col, tree=None, tree_type='fixed',
                         spatial_mode='auto', struct_mode='auto',
                         spatial_cats=None, struct_cats=None, coord_cols=None,
-                        spatial_km=500.0, struct_depth='auto', domain='biology', verbose=True):
+                        spatial_km=500.0, struct_depth='auto', verbose=True):
     df = data.copy()
     n = len(df)
 
@@ -255,7 +255,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
                 # ─── ROUTE 1: BIOLOGY DOMAINS ────────────────────────────────
                 if not is_linguistic_or_cultural:
                     if verbose:
-                        print("🔬 Enforcing Fixed Absolute Depth Optimization (Biology Paradigm)...")
+                        print(" Enforcing Fixed Absolute Depth Optimization (Biology Paradigm)...")
                     search_space = list(range(2, 11))
                     for test_d in search_space:
                         A_test = _parse_unified_tree(tree, df, id_col, 'fixed', test_d)
@@ -282,7 +282,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
                 # ─── ROUTE 2: LINGUISTICS DOMAINS ─────────────────────────────
                 else:
                     if verbose:
-                        print("🔬 Enforcing Relative Ratio Threshold Optimization (Linguistics Paradigm)...")
+                        print(" Enforcing Relative Ratio Threshold Optimization (Linguistics Paradigm)...")
                     search_space = [0.5, 0.7, 0.8, 0.85, 0.90, 0.93, 0.95, 0.96, 0.97, 0.98]
                     for test_r in search_space:
                         test_d_equiv = test_r / 0.10
@@ -309,7 +309,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
                             best_param = test_r
                             best_A_tree = A_test
 
-                    struct_depth = f"ratio_{best_param:.2f}"
+                    struct_depth = best_param
                     tree_type = 'adaptive'
                     if verbose:
                         print(f"   => Verified Optimal Adaptive Ratio: {best_param:.2f} (Adjusted Entropy: {best_entropy:.4f})")
