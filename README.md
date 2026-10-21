@@ -58,7 +58,7 @@ The returned dictionary contains the following keys, which you can access direct
 *   **`tree_type`** (*string*): Tells the code how to count steps down your tree branches.
     *   `"fixed"` (Default): Treats steps as flat integer counts. Best for standard biological species trees.
     *   `"adaptive"`: Converts steps into relative percentages. Perfect for language families where branches are uneven lengths.
-*   **`struct_depth`** (*integer or `"auto"`*): How far back two points must share a branch to be considered "connected". **Defaults to `"auto"`, which lets the engine test your data and choose the best depth for you automatically.**
+*   **`struct_depth`** (*integer or `"auto"`*): How far back two points must share a branch to be considered "connected". **Defaults to `"auto"`, which lets the engine test your data and choose the best depth for you automatically.** A depth of 8 (80% shared lineage if `"adaptive"`) corresponds to large families.
 *   **`spatial_mode` / `struct_mode`** (*string*): Strategy for building the internal network grid (`'auto'`, `'coords'`, `'categorical'`, `'mixed'`, or `'none'`).
 *   **`spatial_cats` / `struct_cats`** (*string or list*): Column headers used to group data by text matches (like matching a `'Zone'` or `'Family_ID'`).
 *   **`coord_cols`** (*list of strings*): Your map coordinates, passed as a list, e.g., `['latitude', 'longitude']`.
