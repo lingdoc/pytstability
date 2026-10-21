@@ -1,6 +1,6 @@
 """
-calculate_k_densities.py - Advanced Cross-Domain Network Topology Calibration Pipeline.
-Demonstrates the features of the pykdensity engine across biology, linguistics, and culture.
+calculate_t_stability.py - Advanced Cross-Domain Network Topology Calibration Pipeline.
+Demonstrates the features of the pytstability engine across biology, linguistics, and culture.
 """
 
 import os
@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 
 # Import the core calculator function from our package
-from pykdensity import calculate_densities
+from pytstability import calculate_densities
 
 # Anchors all folders relative to this script's location
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -46,7 +46,7 @@ for csv_path in bio_csvs:
     df_bio = pd.read_csv(csv_path)
 
     # UNPACKING FIX: Engine returns (spatial_dict, struct_dict, tsi_score)
-    s_metrics, st_metrics, tsi_score = calculate_densities(
+    t_metrics, t_metrics, tsi_score, gamma = calculate_densities(
         data=df_bio,
         id_col='Species',
         tree=tree_path if os.path.exists(tree_path) else None,
@@ -60,13 +60,14 @@ for csv_path in bio_csvs:
         "Domain": "Biology",
         "Label": label,
         "Sample_Size_N": len(df_bio),
-        "Spatial_Kappa": s_metrics.get("kappa", "N/A"),
-        "Spatial_P_Isolated": s_metrics.get("P_isolated", "N/A"),
-        "Spatial_S_Giant": s_metrics.get("S_giant", "N/A"),
-        "Structural_Kappa": st_metrics.get("kappa", "N/A"),
-        "Structural_P_Isolated": st_metrics.get("P_isolated", "N/A"),
-        "Structural_S_Giant": st_metrics.get("S_giant", "N/A"),
-        "Topology_Stability_Index_TSI": tsi_score if not pd.isna(tsi_score) else "N/A"
+        "Spatial_Kappa": t_metrics["spatial_metrics"].get("kappa", "N/A"),
+        "Spatial_P_Isolated": t_metrics["spatial_metrics"].get("P_isolated", "N/A"),
+        "Spatial_S_Giant": t_metrics["spatial_metrics"].get("S_giant", "N/A"),
+        "Structural_Kappa": t_metrics["structural_metrics"].get("kappa", "N/A"),
+        "Structural_P_Isolated": t_metrics["structural_metrics"].get("P_isolated", "N/A"),
+        "Structural_S_Giant": t_metrics["structural_metrics"].get("S_giant", "N/A"),
+        "Topology_Stability_Index_TSI": t_metrics.get("topology_stability_index", "N/A"),
+        "Critical_Horizon": t_metrics.get("critical_horizon", "N/A")
     })
 
 if bio_results:
@@ -116,7 +117,7 @@ if os.path.exists(glottolog_path):
         print(f"    Tree file found: {local_tree_print}")
 
         # UNPACKING FIX: Unpacks metrics dictionaries and scalar TSI score
-        s_metrics, st_metrics, tsi_score = calculate_densities(
+        t_metrics, t_metrics, tsi_score, gamma = calculate_densities(
             data=ling_df,
             id_col='glottocode',
             tree=tree_path,
@@ -133,13 +134,14 @@ if os.path.exists(glottolog_path):
             "Domain": "Linguistics",
             "Label": feat_id,
             "Sample_Size_N": len(ling_df),
-            "Spatial_Kappa": s_metrics.get("kappa", "N/A"),
-            "Spatial_P_Isolated": s_metrics.get("P_isolated", "N/A"),
-            "Spatial_S_Giant": s_metrics.get("S_giant", "N/A"),
-            "Structural_Kappa": st_metrics.get("kappa", "N/A"),
-            "Structural_P_Isolated": st_metrics.get("P_isolated", "N/A"),
-            "Structural_S_Giant": st_metrics.get("S_giant", "N/A"),
-            "Topology_Stability_Index_TSI": tsi_score if not pd.isna(tsi_score) else "N/A"
+            "Spatial_Kappa": t_metrics["spatial_metrics"].get("kappa", "N/A"),
+            "Spatial_P_Isolated": t_metrics["spatial_metrics"].get("P_isolated", "N/A"),
+            "Spatial_S_Giant": t_metrics["spatial_metrics"].get("S_giant", "N/A"),
+            "Structural_Kappa": t_metrics["structural_metrics"].get("kappa", "N/A"),
+            "Structural_P_Isolated": t_metrics["structural_metrics"].get("P_isolated", "N/A"),
+            "Structural_S_Giant": t_metrics["structural_metrics"].get("S_giant", "N/A"),
+            "Topology_Stability_Index_TSI": t_metrics.get("topology_stability_index", "N/A"),
+            "Critical_Horizon": t_metrics.get("critical_horizon", "N/A")
         })
 
     if ling_results:
@@ -167,8 +169,8 @@ for excel_path in etc_excel_paths:
 
     df_etc = pd.read_excel(excel_path)
 
-    # UNPACKING FIX: Catches the full 3-part layout from tree-free structures
-    s_metrics, st_metrics, tsi_score = calculate_densities(
+    # get the metrics
+    t_metrics = calculate_densities(
         data=df_etc,
         id_col='Name' if 'Name' in df_etc.columns else df_etc.columns[0],
         tree=None,
@@ -182,13 +184,14 @@ for excel_path in etc_excel_paths:
         "Domain": "Culture",
         "Label": label,
         "Sample_Size_N": len(df_etc),
-        "Spatial_Kappa": s_metrics.get("kappa", "N/A"),
-        "Spatial_P_Isolated": s_metrics.get("P_isolated", "N/A"),
-        "Spatial_S_Giant": s_metrics.get("S_giant", "N/A"),
-        "Structural_Kappa": st_metrics.get("kappa", "N/A"),
-        "Structural_P_Isolated": st_metrics.get("P_isolated", "N/A"),
-        "Structural_S_Giant": st_metrics.get("S_giant", "N/A"),
-        "Topology_Stability_Index_TSI": tsi_score if not pd.isna(tsi_score) else "N/A"
+        "Spatial_Kappa": t_metrics["spatial_metrics"].get("kappa", "N/A"),
+        "Spatial_P_Isolated": t_metrics["spatial_metrics"].get("P_isolated", "N/A"),
+        "Spatial_S_Giant": t_metrics["spatial_metrics"].get("S_giant", "N/A"),
+        "Structural_Kappa": t_metrics["structural_metrics"].get("kappa", "N/A"),
+        "Structural_P_Isolated": t_metrics["structural_metrics"].get("P_isolated", "N/A"),
+        "Structural_S_Giant": t_metrics["structural_metrics"].get("S_giant", "N/A"),
+        "Topology_Stability_Index_TSI": t_metrics.get("topology_stability_index", "N/A"),
+        "Critical_Horizon": t_metrics.get("critical_horizon", "N/A")
     })
 
 if etc_results:
