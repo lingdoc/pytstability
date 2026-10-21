@@ -7,7 +7,7 @@ Specifically, it looks at your dataset from two angles:
 2. **Structural Density:** How closely related your data points are historically or evolutionarily (like sharing branches on a family tree).
 
 ### Why use it?
-When you feed a dataset into complex hierarchical models, the models assume your data points are well-connected. If your data is actually broken up into isolated "islands" with huge information gaps, those statistical models can fail—leading to massive errors or numbers that completely collapse or (worse) topological mirages. This package flags those weak spots before you start modeling.
+When you feed a dataset into complex hierarchical models, the models assume your data points are well-connected. If your data is actually broken up into isolated "islands" with huge information gaps, those statistical models can fail—leading to massive errors, numbers that completely collapse, or topological mirages. This package flags those weak spots before you start modeling.
 
 ---
 
@@ -30,15 +30,20 @@ from pytstability import calculate_densities
 ```
 
 ### Unpacking Your Results
-The engine returns **three variables**:
+The engine returns **a single, comprehensive dictionary** containing all topological metrics and baseline diagnostic parameters. You catch the output using a single variable:
 
 ```python
-spatial_metrics, struct_metrics, tsi_score = calculate_densities(...)
+results = calculate_densities(...)
 ```
 
-*   **`spatial_metrics`** (dict): A dictionary tracking your map connections, including the overall density (`kappa`), the percentage of completely isolated points (`P_isolated`), and the size of your largest single clump of data (`S_giant`).
-*   **`struct_metrics`** (dict): A dictionary tracking your tree/historical connections, using the exact same metrics (`kappa`, `P_isolated`, `S_giant`).
-*   **`tsi_score`** (float): The **Topology Stability Index**. A single safety score that tells you if your dataset is well-connected enough to safely run default models.
+The returned dictionary contains the following keys, which you can access directly:
+
+*   **`results["spatial_metrics"]`** (dict): A sub-dictionary tracking your map connections, including overall density (`kappa`), the percentage of isolated data points (`P_isolated`), and the size of your largest single clump of data (`S_giant`).
+*   **`results["structural_metrics"]`** (dict): A sub-dictionary tracking your tree or historical connections using the exact same metrics (`kappa`, `P_isolated`, `S_giant`).
+*   **`results["topology_stability_index"]`** (float): The final **Topology Stability Index (TSI)**. This is your primary safety score telling you if the dataset is cohesive enough for standard modeling.
+*   **`results["critical_horizon"]`** (float): Your baseline fallback safety limit (`gamma`), automatically calculated based on how geographically fragmented your data entries are.
+*   **`results["spatial_components"]`** (int): The total number of separate geographic clusters discovered on your map.
+*   **`results["structural_components"]`** (int): The total number of separate historical lineage islands found in your tree structure.
 
 ---
 
@@ -83,7 +88,7 @@ from pytstability import calculate_densities
 df = pd.read_csv("data/bio/mammals.csv")
 
 # Letting struct_depth='auto' figure out the tree depth for you
-s_metrics, st_metrics, tsi = calculate_densities(
+results = calculate_densities(
     data=df,
     id_col="Species",
     tree="data/bio/mammals100trees.nex",  
@@ -91,6 +96,10 @@ s_metrics, st_metrics, tsi = calculate_densities(
     struct_depth="auto",
     verbose=True
 )
+
+# Extract metrics using the returned dictionary's keys
+st_metrics = results["structural_metrics"]
+tsi = results["topology_stability_index"]
 
 print(f"Auto-selected Structural Density: {st_metrics['kappa']:.4f}")
 print(f"Safety Stability Score (TSI): {tsi:.6f}")
@@ -103,8 +112,8 @@ from pytstability import calculate_densities
 
 df = pd.read_csv("data/tlu/Glottolog_Languages.csv")
 
-# The code automatically handles coordinates safely behind the scenes
-s_metrics, st_metrics, tsi = calculate_densities(
+# The code automatically handles raw coordinates
+results = calculate_densities(
     data=df,
     id_col="glottocode",
     tree="data/tlu/0015aKA/pruned_tree.trees.gz",
@@ -116,6 +125,9 @@ s_metrics, st_metrics, tsi = calculate_densities(
     spatial_km=500.0,
     verbose=True
 )
+
+print(f"Number of Spatial Clusters Found: {results['spatial_components']}")
+print(f"Calculated Danger Horizon (Gamma): {results['critical_horizon']:.6f}")
 ```
 
 ### 3. Cultural Evolution (Category Groupings Only)
@@ -126,7 +138,7 @@ from pytstability import calculate_densities
 df = pd.read_excel("data/etc/Data_love_bywork_2019.xlsx")
 
 # No tree file? No problem. It creates a network using your category text columns.
-s_metrics, st_metrics, tsi = calculate_densities(
+results = calculate_densities(
     data=df,
     id_col="Name",
     tree=None,
@@ -134,6 +146,8 @@ s_metrics, st_metrics, tsi = calculate_densities(
     struct_cats=["Century", "Genre.1"],
     verbose=True
 )
+
+print(f"Dataset Topology Stability Index: {results['topology_stability_index']:.6f}")
 ```
 
 ---
@@ -143,7 +157,7 @@ s_metrics, st_metrics, tsi = calculate_densities(
 When `verbose=True`, the package prints out a quick diagnostic report about your data structure:
 
 ### PIPELINE CRASH ALERT
-This means your dataset has broken apart into isolated islands. Your historical data is too fragmented, or your categories don't talk to each other. If you try to run traditional multi-level regression models on this data right now, your model's parameters are highly likely to collapse or blow up. You'll need to restructure your data partitions or use specialized continuous models.
+This means your dataset has broken apart into isolated islands. Your historical data is too fragmented, or your categories don't talk to each other. If you try to run traditional multi-level regression models on this data right now, your model's parameters are highly likely to collapse or blow up. You'll need to update your data, restructure your data partitions, or use specialized continuous models.
 
 ### ROBUST POSTERIOR SURFACE
 This means your dataset passes the safety check. There is a healthy, continuous backbone of shared connections across your rows, making it perfectly safe to proceed with your standard regressions or MCMC parameter estimations.
