@@ -360,6 +360,9 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
     dr_weighted = dr_base * partition_penalty
     topology_stability_index = float((k_active * (1.0 - p_active)) / dr_weighted)
 
+    # Calculate the scale-invariant horizon
+    critical_horizon = float(0.0050 * np.log(float(s_components) + 1.0))
+
     if verbose:
         print("")
         print("-- Data Topology Metrics --")
@@ -368,11 +371,10 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
         print(f"Spatial Topology   : κ = {spatial_metrics['kappa']:.4f} | P_isolated = {spatial_metrics['P_isolated']:.4f} | S_giant = {spatial_metrics['S_giant']:.4f}")
         print(f"Structural Topology: κ = {struct_metrics['kappa']:.4f} | P_isolated = {struct_metrics['P_isolated']:.4f} | S_giant = {struct_metrics['S_giant']:.4f}")
         print(f"Unified Diagnostic : Topology Stability Index (TSI) = {topology_stability_index:.6f}")
+        print(f"Critical Ceiling   : Dynamic Danger Horizon (Gamma)   = {critical_horizon:.6f}")
         print("")
 
     if not pd.isna(struct_metrics["kappa"]) and verbose:
-        critical_horizon = 0.0050 * np.log(float(s_components) + 1.0)
-
         if topology_stability_index <= critical_horizon:
             print(f"* PIPELINE CRASH ALERT * Data saturation surface collapsed (Horizon: {critical_horizon:.5f}).")
             print(f"   Diagnostic Profile: TSI ({topology_stability_index:.5f}) resides inside the Critical Danger Zone.")
@@ -381,5 +383,5 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
             print(f"* PIPELINE STATUS *  : Robust posterior surface (Horizon: {critical_horizon:.5f}).")
             print("   Diagnostic Profile: TSI metrics confirm sufficient continuous shared variance backbones.")
         print("")
-
-    return spatial_metrics, struct_metrics, topology_stability_index
+        
+    return spatial_metrics, struct_metrics, topology_stability_index, critical_horizon
