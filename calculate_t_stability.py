@@ -19,9 +19,7 @@ os.makedirs(results_dir, exist_ok=True)
 
 print("\nStarting cross-domain network data pipeline")
 
-# =========================================================================
-# 1. BIOLOGICAL DATA EXAMPLE (Vertebrate Ecology)
-# =========================================================================
+# 1. Biological data example (Vertebrate Ecology)
 print("\n" + "-" * 80)
 print("\n Processing domain: vertebrate ecology (biology)\n")
 
@@ -45,8 +43,8 @@ for csv_path in bio_csvs:
 
     df_bio = pd.read_csv(csv_path)
 
-    # UNPACKING FIX: Engine returns (spatial_dict, struct_dict, tsi_score)
-    t_metrics, t_metrics, tsi_score, gamma = calculate_densities(
+    # get the metrics
+    t_metrics = calculate_densities(
         data=df_bio,
         id_col='Species',
         tree=tree_path if os.path.exists(tree_path) else None,
@@ -76,9 +74,7 @@ if bio_results:
     print(f"\nBiology results saved to: {os.path.relpath(bio_output_path, base_dir)}")
 
 
-# =========================================================================
-# 2. LINGUISTIC DATA EXAMPLE (Linguistic Typology)
-# =========================================================================
+# 2. Linguistic data example (Linguistic Typology)
 print("\n" + "-" * 80)
 print("\n Processing domain: linguistic typology (linguistics)\n")
 
@@ -116,8 +112,8 @@ if os.path.exists(glottolog_path):
         print(f"    Matched {len(ling_df)} languages on the map.")
         print(f"    Tree file found: {local_tree_print}")
 
-        # UNPACKING FIX: Unpacks metrics dictionaries and scalar TSI score
-        t_metrics, t_metrics, tsi_score, gamma = calculate_densities(
+        # get the metrics
+        t_metrics = calculate_densities(
             data=ling_df,
             id_col='glottocode',
             tree=tree_path,
@@ -152,9 +148,7 @@ else:
     print(f"Cannot run linguistics loop: file missing at {os.path.relpath(glottolog_path, base_dir)}")
 
 
-# =========================================================================
-# 3. CULTURAL DATA EXAMPLE (Cultural Evolution)
-# =========================================================================
+# 3. Cultural data example (Literary Themes)
 print("\n" + "-" * 80)
 print("\n Processing domain: cultural evolution (culture)\n")
 
