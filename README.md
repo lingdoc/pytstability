@@ -157,7 +157,7 @@ print(f"Dataset Topology Stability Index: {results['topology_stability_index']:.
 When `verbose=True`, the package prints out a quick diagnostic report about your data structure:
 
 ### PIPELINE CRASH ALERT
-This means your dataset has broken apart into isolated islands. Your historical data is too fragmented, or your categories don't talk to each other. If you try to run traditional multi-level regression models on this data right now, your model's parameters are highly likely to collapse or blow up. You'll need to update your data, restructure your data partitions, or use specialized continuous models.
+This means your dataset has broken apart into isolated islands. Your historical data is too fragmented, or your categories don't talk to each other. If you try to run traditional multi-level regression models on this data right now, your model's parameters are highly likely to collapse or blow up. You'll need to update your data, restructure your data partitions, or use specialized topology-aware models.
 
 ### ROBUST POSTERIOR SURFACE
-This means your dataset passes the safety check. There is a healthy, continuous backbone of shared connections across your rows, making it perfectly safe to proceed with your standard regressions or MCMC parameter estimations.
+This means your dataset passes the safety check. There is a healthy, continuous set of shared connections across your rows, making it perfectly safe to proceed with your standard regressions or MCMC parameter estimations.
