@@ -41,7 +41,7 @@ The returned dictionary contains the following keys, which you can access direct
 *   **`results["spatial_metrics"]`** (dict): A sub-dictionary tracking your map connections, including overall density (`kappa`), the percentage of isolated data points (`P_isolated`), and the size of your largest single clump of data (`S_giant`).
 *   **`results["structural_metrics"]`** (dict): A sub-dictionary tracking your tree or historical connections using the exact same metrics (`kappa`, `P_isolated`, `S_giant`).
 *   **`results["topology_stability_index"]`** (float): The final **Topology Stability Index (TSI)**. This is your primary safety score telling you if the dataset is cohesive enough for standard modeling.
-*   **`results["critical_horizon"]`** (float): Your baseline fallback safety limit (`gamma`), automatically calculated based on how geographically fragmented your data entries are.
+*   **`results["critical_horizon"]`** (float): Your baseline fallback safety limit (`gamma`), automatically calculated based on how fragmented your data entries are.
 *   **`results["spatial_components"]`** (int): The total number of separate geographic clusters discovered on your map.
 *   **`results["structural_components"]`** (int): The total number of separate historical lineage islands found in your tree structure.
 
