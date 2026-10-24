@@ -151,7 +151,7 @@ def _parse_unified_tree(tree_path, df, id_col, tree_type='fixed', depth_threshol
     A = np.zeros((n, n))
     mode = str(tree_type).strip().lower()
     cached_paths = [lineage_paths_cache.get(sp, lineage_paths_cache.get(sp.replace(' ', '_'), [0])) for sp in species_list]
-    
+
     # Dynamically format the description string based on the active mode configuration
     if mode == 'adaptive':
         # Translate the internal float index back into the human-readable ratio fraction
@@ -212,10 +212,8 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
             st_mode = 'mixed' if st_cats else 'tree'
         else:
             st_mode = 'categorical' if st_cats else 'none'
-
-    # =========================================================================
+            
     # 3. Compile Spatial Adjacency Matrix Block
-    # =========================================================================
     A_space = np.ones((n, n))
     calculated_space = False
 
@@ -241,9 +239,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
         k_s, p_s, s_g_s, s_components = _compute_topological_metrics(A_space)
         spatial_metrics = {"kappa": k_s, "P_isolated": p_s, "S_giant": s_g_s}
 
-    # =========================================================================
     # 4. Compile Structural Adjacency Matrix Block (Parametric Framework)
-    # =========================================================================
     A_tree = np.zeros((n, n))
     calculated_tree = False
     dr_base = 1.0
@@ -267,7 +263,6 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
                         print(" Enforcing Fixed Absolute Depth Optimization (Biology Paradigm)...")
                     search_space = list(range(2, 11))
                     for test_d in search_space:
-                        # Fixed variable signature scoping parameter injection
                         A_test = _parse_unified_tree(tree, df, id_col, 'fixed', test_d, verbose=verbose)
                         k_t, p_t, s_g_t, comp_t = _compute_topological_metrics(A_test)
 
@@ -328,7 +323,6 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
                 A_tree = best_A_tree
                 calculated_tree = True
             else:
-                # Fixed variable signature scoping parameter injection
                 A_tree = _parse_unified_tree(tree, df, id_col, tree_type, int(struct_depth), verbose=verbose)
                 calculated_tree = True
         except Exception as e:
@@ -356,9 +350,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
         k_t, p_t, s_g_t, st_components = _compute_topological_metrics(A_struct_final)
         struct_metrics = {"kappa": k_t, "P_isolated": p_t, "S_giant": s_g_t}
 
-    # =========================================================================
     # 5. Combined TSI Formulation Layer & Dynamic Horizon
-    # =========================================================================
     k_active = struct_metrics["kappa"] if not pd.isna(struct_metrics["kappa"]) else 0.0
     p_active = struct_metrics["P_isolated"] if not pd.isna(struct_metrics["P_isolated"]) else 0.0
     s_giant_active = struct_metrics["S_giant"] if not pd.isna(struct_metrics["S_giant"]) else 1.0
@@ -372,7 +364,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
     dr_weighted = dr_base * partition_penalty
     topology_stability_index = float((k_active * (1.0 - p_active)) / dr_weighted)
 
-    # NEW: Compute mass-weighted effective components for Spatial Graph
+    # Compute mass-weighted effective components for Spatial Graph
     s_eff = 1.0
     if 'A_space' in locals() and np.sum(A_space > 0) > 0:
         try:
@@ -384,7 +376,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
         except Exception:
             s_eff = float(s_components)
 
-    # NEW: Compute mass-weighted effective components for Structural Graph
+    # Compute mass-weighted effective components for Structural Graph
     st_eff = 1.0
     if 'A_struct_final' in locals() and np.sum(A_struct_final > 0) > 0:
         try:
@@ -396,7 +388,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
         except Exception:
             st_eff = float(st_components)
 
-    # NEW: Execute the Joint Mass-Weighted Max Selector Layer
+    # Execute the Joint Mass-Weighted Max Selector Layer
     max_effective_components = max(s_eff, st_eff)
     critical_horizon = float(0.0050 * np.log(float(max_effective_components) + 1.0))
 
