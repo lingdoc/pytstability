@@ -35,5 +35,6 @@ setup(
         "scipy>=1.8.0",
         "biopython>=1.79",
         "openpyxl>=3.0.0",  # necessary for loading excel spreadsheets in the culture track
+        "tqdm>=4.66.0",
     ],
 )

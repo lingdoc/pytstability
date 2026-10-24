@@ -11,6 +11,7 @@ import pandas as pd
 import scipy.sparse as sp
 from scipy.spatial.distance import pdist, squareform
 from Bio import Phylo
+from tqdm import tqdm
 
 def _compute_topological_metrics(A):
     """
@@ -81,7 +82,7 @@ def _audit_tree_segments(tree_path):
     disconnection_ratio = float(var_segment / (mean_segment ** 2)) if mean_segment > 0 else 1.0
     return disconnection_ratio
 
-def _parse_unified_tree(tree_path, df, id_col, tree_type='fixed', depth_threshold=3):
+def _parse_unified_tree(tree_path, df, id_col, tree_type='fixed', depth_threshold=3, verbose=True):
     """Reads a tree file, extracts the Newick structure, maps identifiers, and builds an adjacency matrix."""
     n = len(df)
     df_clean = df.copy()
@@ -143,7 +144,6 @@ def _parse_unified_tree(tree_path, df, id_col, tree_type='fixed', depth_threshol
             elif char not in [',', ';', ':', ' ']:
                 match = re.match(r'^([\d\w\.\-_]+)', tree_string[i:])
                 if match:
-                    # Enforce strict sanitization strings on custom dictionary maps
                     token = match.group(1).strip().lower().replace("'", "").replace('"', '')
                     resolved_key = translate_map.get(token, token).replace(' ', '_')
                     lineage_paths_cache[resolved_key] = list(stack)
@@ -151,8 +151,18 @@ def _parse_unified_tree(tree_path, df, id_col, tree_type='fixed', depth_threshol
     A = np.zeros((n, n))
     mode = str(tree_type).strip().lower()
     cached_paths = [lineage_paths_cache.get(sp, lineage_paths_cache.get(sp.replace(' ', '_'), [0])) for sp in species_list]
+    
+    # Dynamically format the description string based on the active mode configuration
+    if mode == 'adaptive':
+        # Translate the internal float index back into the human-readable ratio fraction
+        current_param = f"Ratio {depth_threshold * 0.10:.2f}"
+    else:
+        current_param = f"Level {int(depth_threshold)}"
 
-    for i in range(n):
+    display_desc = f"Building Matrix ({mode} mode | {current_param})"
+
+    # Outer matrix execution row loop tracking
+    for i in tqdm(range(n), desc=display_desc, disable=not verbose):
         path_i = cached_paths[i]
         len_i = len(path_i)
         for j in range(i + 1, n):
@@ -210,7 +220,6 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
     calculated_space = False
 
     if s_mode in ['coords', 'mixed'] and coord_cols and len(coord_cols) >= 2:
-        # implicit 2D array parsing to fix row metric stacks
         lat_rad = np.radians(df[[coord_cols[0]]].to_numpy().flatten().astype(float))
         lon_rad = np.radians(df[[coord_cols[1]]].to_numpy().flatten().astype(float))
         R = 6371.0
@@ -258,7 +267,8 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
                         print(" Enforcing Fixed Absolute Depth Optimization (Biology Paradigm)...")
                     search_space = list(range(2, 11))
                     for test_d in search_space:
-                        A_test = _parse_unified_tree(tree, df, id_col, 'fixed', test_d)
+                        # Fixed variable signature scoping parameter injection
+                        A_test = _parse_unified_tree(tree, df, id_col, 'fixed', test_d, verbose=verbose)
                         k_t, p_t, s_g_t, comp_t = _compute_topological_metrics(A_test)
 
                         s_g_clamped = max(s_g_t, 1e-6)
@@ -286,7 +296,8 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
                     search_space = [0.5, 0.7, 0.8, 0.85, 0.90, 0.93, 0.95, 0.96, 0.97, 0.98]
                     for test_r in search_space:
                         test_d_equiv = test_r / 0.10
-                        A_test = _parse_unified_tree(tree, df, id_col, 'adaptive', test_d_equiv)
+                        # Fixed variable signature scoping parameter injection
+                        A_test = _parse_unified_tree(tree, df, id_col, 'adaptive', test_d_equiv, verbose=verbose)
                         k_t, p_t, s_g_t, comp_t = _compute_topological_metrics(A_test)
 
                         s_g_clamped = max(s_g_t, 1e-6)
@@ -317,7 +328,8 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
                 A_tree = best_A_tree
                 calculated_tree = True
             else:
-                A_tree = _parse_unified_tree(tree, df, id_col, tree_type, int(struct_depth))
+                # Fixed variable signature scoping parameter injection
+                A_tree = _parse_unified_tree(tree, df, id_col, tree_type, int(struct_depth), verbose=verbose)
                 calculated_tree = True
         except Exception as e:
             if verbose: print(f"Warning: Tree parsing failed: {e}")
@@ -360,8 +372,33 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
     dr_weighted = dr_base * partition_penalty
     topology_stability_index = float((k_active * (1.0 - p_active)) / dr_weighted)
 
-    # Compute the scale-invariant horizon ceiling
-    critical_horizon = float(0.0050 * np.log(float(s_components) + 1.0))
+    # NEW: Compute mass-weighted effective components for Spatial Graph
+    s_eff = 1.0
+    if 'A_space' in locals() and np.sum(A_space > 0) > 0:
+        try:
+            s_sparse = sp.csr_matrix(A_space > 0)
+            s_num, s_labels = sp.csgraph.connected_components(s_sparse, directed=False)
+            if s_num > 0:
+                s_counts = pd.Series(s_labels).value_counts().to_numpy()
+                s_eff = 1.0 / np.sum((s_counts / n) ** 2)
+        except Exception:
+            s_eff = float(s_components)
+
+    # NEW: Compute mass-weighted effective components for Structural Graph
+    st_eff = 1.0
+    if 'A_struct_final' in locals() and np.sum(A_struct_final > 0) > 0:
+        try:
+            st_sparse = sp.csr_matrix(A_struct_final > 0)
+            st_num, st_labels = sp.csgraph.connected_components(st_sparse, directed=False)
+            if st_num > 0:
+                st_counts = pd.Series(st_labels).value_counts().to_numpy()
+                st_eff = 1.0 / np.sum((st_counts / n) ** 2)
+        except Exception:
+            st_eff = float(st_components)
+
+    # NEW: Execute the Joint Mass-Weighted Max Selector Layer
+    max_effective_components = max(s_eff, st_eff)
+    critical_horizon = float(0.0050 * np.log(float(max_effective_components) + 1.0))
 
     if verbose:
         print("")
