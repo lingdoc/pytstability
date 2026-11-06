@@ -74,6 +74,10 @@ Picking a tree depth manually may bias your connectivity scores. If you set `str
 *   **For Biology Datasets:** The code tests branch levels from 2 down to 10, running internal sanity checks to see which depth reveals the cleanest, most natural groupings.
 *   **For Linguistics & Culture Datasets:** The code tests matching percentages from 50% to 98%. It cross-checks your historical tree against your geographic map points to find the setting where history and geography align most logically.
 
+**CAVEATS**
+
+Treat your data appropriately. The calculator can give incorrect results if used naively. As an example, if I have a Linguistic tree but no spatial coordinates, the `"auto"` setting will treat it as a biological tree and may find that an 'optimal' depth is `2`. At this level of structure (grouping all languages in the world into 4 super-families) estimates are fine, but any conclusions drawn from such estimates will be erroneous. To address this, I should use manual settings (`tree_type="adaptive"` or `struct_depth=7`) appropriate to the realities of the data.
+
 ---
 
 ## Quick Code Examples
