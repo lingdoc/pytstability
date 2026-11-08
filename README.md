@@ -6,6 +6,8 @@ Specifically, it looks at your dataset from two angles:
 1. **Spatial Density:** How close your data points are to each other on a map.
 2. **Structural Density:** How closely related your data points are historically or evolutionarily (like sharing branches on a family tree).
 
+![pyTstability](data/pyTstability_banner.png "Topological Stability")
+
 ### Why use it?
 When you feed a dataset into complex hierarchical models, the models assume your data points are well-connected. If your data is actually broken up into isolated "islands" with huge information gaps, those statistical models can fail—leading to massive errors, numbers that completely collapse, or topological mirages. This package flags those weak spots before you start modeling.
 
