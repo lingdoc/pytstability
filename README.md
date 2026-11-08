@@ -32,13 +32,13 @@ from pytstability import calculate_densities
 ```
 
 ### Unpacking Your Results
-The engine returns **a single, comprehensive dictionary** containing all topological metrics and baseline diagnostic parameters. You catch the output using a single variable:
+The engine returns **a single dictionary** containing all topological metrics and baseline diagnostic parameters. You store the output using a single variable:
 
 ```python
 results = calculate_densities(...)
 ```
 
-The returned dictionary contains the following keys, which you can access directly:
+The returned dictionary contains the following keys:
 
 *   **`results["spatial_metrics"]`** (dict): A sub-dictionary tracking your map connections, including overall density (`kappa`), the percentage of isolated data points (`P_isolated`), and the size of your largest single clump of data (`S_giant`).
 *   **`results["structural_metrics"]`** (dict): A sub-dictionary tracking your tree or historical connections using the exact same metrics (`kappa`, `P_isolated`, `S_giant`).
@@ -46,6 +46,8 @@ The returned dictionary contains the following keys, which you can access direct
 *   **`results["critical_horizon"]`** (float): Your baseline fallback safety limit (`gamma`), automatically calculated based on how fragmented your data entries are.
 *   **`results["spatial_components"]`** (int): The total number of separate geographic clusters discovered on your map.
 *   **`results["structural_components"]`** (int): The total number of separate historical lineage islands found in your tree structure.
+
+The `verbose=True` flag (default) prints out these results to the terminal in an organized table.
 
 ---
 
