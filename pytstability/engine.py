@@ -212,7 +212,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
             st_mode = 'mixed' if st_cats else 'tree'
         else:
             st_mode = 'categorical' if st_cats else 'none'
-            
+
     # 3. Compile Spatial Adjacency Matrix Block
     A_space = np.ones((n, n))
     calculated_space = False
@@ -362,7 +362,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
     partition_penalty = 1.0 + np.log(adjusted_components + 1.0)
 
     dr_weighted = dr_base * partition_penalty
-    topology_stability_index = float((k_active * (1.0 - p_active)) / dr_weighted)
+    topological_stability_index = float((k_active * (1.0 - p_active)) / dr_weighted)
 
     # Compute mass-weighted effective components for Spatial Graph
     s_eff = 1.0
@@ -399,12 +399,12 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
         print(f"Structural Mode    : {st_mode} (Components: {st_components} | Optimized Depth: {struct_depth})")
         print(f"Spatial Topology   : κ = {spatial_metrics['kappa']:.4f} | P_isolated = {spatial_metrics['P_isolated']:.4f} | S_giant = {spatial_metrics['S_giant']:.4f}")
         print(f"Structural Topology: κ = {struct_metrics['kappa']:.4f} | P_isolated = {struct_metrics['P_isolated']:.4f} | S_giant = {struct_metrics['S_giant']:.4f}")
-        print(f"Unified Diagnostic : Topology Stability Index (TSI) = {topology_stability_index:.6f}")
-        print(f"Critical Ceiling   : Dynamic Danger Horizon (Gamma)   = {critical_horizon:.6f}")
+        print(f"Unified Diagnostic : Topological Stability Index (TSI) = {topological_stability_index:.6f}")
+        print(f"Critical Ceiling   : Dynamic Danger Horizon (Γ)   = {critical_horizon:.6f}")
         print("")
 
     if not pd.isna(struct_metrics["kappa"]) and verbose:
-        if topology_stability_index <= critical_horizon:
+        if topological_stability_index <= critical_horizon:
             print(f"* PIPELINE CRASH ALERT * Data saturation surface collapsed (Horizon: {critical_horizon:.5f}).")
         else:
             print(f"* PIPELINE STATUS *  : Robust posterior surface (Horizon: {critical_horizon:.5f}).")
@@ -414,7 +414,7 @@ def calculate_densities(data, id_col, tree=None, tree_type='fixed',
     return {
         "spatial_metrics": spatial_metrics,
         "structural_metrics": struct_metrics,
-        "topology_stability_index": topology_stability_index,
+        "topological_stability_index": topological_stability_index,
         "critical_horizon": critical_horizon,
         "spatial_components": int(s_components),
         "structural_components": int(st_components)

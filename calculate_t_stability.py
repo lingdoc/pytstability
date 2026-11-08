@@ -64,7 +64,7 @@ for csv_path in bio_csvs:
         "Structural_Kappa": t_metrics["structural_metrics"].get("kappa", "N/A"),
         "Structural_P_Isolated": t_metrics["structural_metrics"].get("P_isolated", "N/A"),
         "Structural_S_Giant": t_metrics["structural_metrics"].get("S_giant", "N/A"),
-        "Topology_Stability_Index_TSI": t_metrics.get("topology_stability_index", "N/A"),
+        "topological_stability_index_TSI": t_metrics.get("topological_stability_index", "N/A"),
         "Critical_Horizon": t_metrics.get("critical_horizon", "N/A")
     })
 
@@ -136,7 +136,7 @@ if os.path.exists(glottolog_path):
             "Structural_Kappa": t_metrics["structural_metrics"].get("kappa", "N/A"),
             "Structural_P_Isolated": t_metrics["structural_metrics"].get("P_isolated", "N/A"),
             "Structural_S_Giant": t_metrics["structural_metrics"].get("S_giant", "N/A"),
-            "Topology_Stability_Index_TSI": t_metrics.get("topology_stability_index", "N/A"),
+            "topological_stability_index_TSI": t_metrics.get("topological_stability_index", "N/A"),
             "Critical_Horizon": t_metrics.get("critical_horizon", "N/A")
         })
 
@@ -184,7 +184,7 @@ for excel_path in etc_excel_paths:
         "Structural_Kappa": t_metrics["structural_metrics"].get("kappa", "N/A"),
         "Structural_P_Isolated": t_metrics["structural_metrics"].get("P_isolated", "N/A"),
         "Structural_S_Giant": t_metrics["structural_metrics"].get("S_giant", "N/A"),
-        "Topology_Stability_Index_TSI": t_metrics.get("topology_stability_index", "N/A"),
+        "topological_stability_index_TSI": t_metrics.get("topological_stability_index", "N/A"),
         "Critical_Horizon": t_metrics.get("critical_horizon", "N/A")
     })
 

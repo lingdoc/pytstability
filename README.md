@@ -42,7 +42,7 @@ The returned dictionary contains the following keys:
 
 *   **`results["spatial_metrics"]`** (dict): A sub-dictionary tracking your map connections, including overall density (`kappa`), the percentage of isolated data points (`P_isolated`), and the size of your largest single clump of data (`S_giant`).
 *   **`results["structural_metrics"]`** (dict): A sub-dictionary tracking your tree or historical connections using the exact same metrics (`kappa`, `P_isolated`, `S_giant`).
-*   **`results["topology_stability_index"]`** (float): The final **Topology Stability Index (TSI)**. This is your primary safety score telling you if the dataset is cohesive enough for standard modeling.
+*   **`results["topological_stability_index"]`** (float): The final **Topological Stability Index (TSI)**. This is your primary safety score telling you if the dataset is cohesive enough for standard modeling.
 *   **`results["critical_horizon"]`** (float): Your baseline fallback safety limit (`gamma`), automatically calculated based on how fragmented your data entries are.
 *   **`results["spatial_components"]`** (int): The total number of separate geographic clusters discovered on your map.
 *   **`results["structural_components"]`** (int): The total number of separate historical lineage islands found in your tree structure.
@@ -107,7 +107,7 @@ results = calculate_densities(
 
 # Extract metrics using the returned dictionary's keys
 st_metrics = results["structural_metrics"]
-tsi = results["topology_stability_index"]
+tsi = results["topological_stability_index"]
 
 print(f"Auto-selected Structural Density: {st_metrics['kappa']:.4f}")
 print(f"Safety Stability Score (TSI): {tsi:.6f}")
@@ -135,7 +135,7 @@ results = calculate_densities(
 )
 
 print(f"Number of Spatial Clusters Found: {results['spatial_components']}")
-print(f"Calculated Danger Horizon (Gamma): {results['critical_horizon']:.6f}")
+print(f"Calculated Danger Horizon (Γ): {results['critical_horizon']:.6f}")
 ```
 
 ### 3. Cultural Evolution (Category Groupings Only)
@@ -155,7 +155,7 @@ results = calculate_densities(
     verbose=True
 )
 
-print(f"Dataset Topology Stability Index: {results['topology_stability_index']:.6f}")
+print(f"Dataset Topological Stability Index: {results['topological_stability_index']:.6f}")
 ```
 
 ---
